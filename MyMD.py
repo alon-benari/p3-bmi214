@@ -20,15 +20,18 @@ class MDSim(object):
         kwargs: from CLI.
 
         """
-        self.sim_params = {}
+        self.read_sim_params = {}  # read from file 
+        self.sim_params = {}  # read from cli 
         for key, value in kwargs.items():
             self.sim_params[key] = value
+        
+       
 
         self.edges = {} # a dictionary to hold for each atoms the atoms he is linked to.
         self.bonded_atoms = {}
         self.output_row = []
         self.energetics = [['# step',  'E_k' ,'E_b', 'E_nb' ,'E_tot']]
-       
+    
     def get_b0(self):
         """
         A method to compute b0 
@@ -62,7 +65,12 @@ class MDSim(object):
         update_parms = rows[0].split(':')[1].strip('\n').split()
         for i in update_parms:
             k,v = i.split('=')
-            self.sim_params[k] = float(v)
+            self.read_sim_params[k] = float(v)
+        self.read_sim_params.update(self.sim_params)
+        # merge the two dictionaries
+        self.sim_params = self.read_sim_params
+       
+
 
         c = len(rows[1:])+1 #determine number of columns
         #
@@ -237,7 +245,7 @@ class MDSim(object):
       """
       A method to  insert a header line in the files
       """
-      header = "# %s: kB=%.1f kN=%.1f  nbCutoff=%.1f dt=%.4f  mass=%.1f  T=%.1f" % (self.sim_params['input_file'].split('.')[0], self.sim_params['kB'], self.sim_params['kN'],self.sim_params['nbCutoff'], self.sim_params['dt'], self.sim_params['mass'],self.sim_params['T'])
+      header = "# %s: kB=%.1f kN=%.1f  nbCutoff=%.2f dt=%.4f  mass=%.2f  T=%.2f" % (self.sim_params['input_file'].split('.')[0], self.sim_params['kB'], self.sim_params['kN'],self.sim_params['nbCutoff'], self.sim_params['dt'], self.sim_params['mass'],self.sim_params['T'])
 
       self.output_row.append([header])
 
@@ -363,7 +371,7 @@ if __name__ == '__main__':
                 )     
 
     res = parser.parse_args()
-    #res = parser.parse_args(['--iF','square.rvc','--nbCutoff', '4'])
+    #res = parser.parse_args(['--iF','square.rvc','--nbCutoff', '3.8'])
 
     if res.out is None: 
         res.out = res.input_file.split('.')[0]+'_out'
